@@ -142,3 +142,5 @@ Thumbs.db
 **/*.pyd
 __pycache__/
 **/*.so
+
+.history/
