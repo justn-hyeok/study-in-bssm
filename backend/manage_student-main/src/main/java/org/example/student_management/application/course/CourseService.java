@@ -25,14 +25,58 @@ public class CourseService {
   }
 
   public List<CourseInfoDto> getCourseDayOfWeek(DayOfWeek dayOfWeek) {
-    // 과제 구현 부분
     List<Course> courses = courseRepository.getCourseDayOfWeek(dayOfWeek);
+    return convertCoursesToDtos(courses);
+  }
 
-    return new ArrayList<>();
+  private List<CourseInfoDto> convertCoursesToDtos(List<Course> courses) {
+    List<CourseInfoDto> courseDtos = new ArrayList<>();
+    for (Course course : courses) {
+      courseDtos.add(new CourseInfoDto(course));
+    }
+    return courseDtos;
   }
 
   public void changeFee(String studentName, int fee) {
-    // 과제 구현 부분
+    List<Course> studentCourses = courseRepository.getCourseListByStudent(studentName);
+    
+    if (studentCourses.isEmpty()) {
+      throw new IllegalArgumentException("해당 학생의 수업이 없습니다.");
+    }
+    
+    List<Course> updatedCourses = updateCourseFees(studentCourses, fee);
+    courseRepository.saveCourses(updatedCourses);
+  }
 
+  private List<Course> updateCourseFees(List<Course> courses, int baseFee) {
+    List<Course> updatedCourses = new ArrayList<>();
+    for (Course course : courses) {
+      int finalFee = calculateFinalFee(baseFee, course.getDayOfWeek());
+      Course updatedCourse = createUpdatedCourse(course, finalFee);
+      updatedCourses.add(updatedCourse);
+    }
+    return updatedCourses;
+  }
+
+  private int calculateFinalFee(int baseFee, DayOfWeek dayOfWeek) {
+    if (isWeekend(dayOfWeek)) {
+      return (int) (baseFee * 1.5);
+    }
+    return baseFee;
+  }
+
+  private boolean isWeekend(DayOfWeek dayOfWeek) {
+    return dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY;
+  }
+
+  private Course createUpdatedCourse(Course originalCourse, int newFee) {
+    Student student = studentService.getStudent(originalCourse.getStudentName());
+    return new Course(
+        student,
+        originalCourse.getCourseName(),
+        newFee,
+        originalCourse.getDayOfWeek(),
+        originalCourse.getCourseTime()
+    );
   }
 }
