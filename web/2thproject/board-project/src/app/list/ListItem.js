@@ -19,6 +19,7 @@ const ListItem = ({ items }) => {
         <div className="list-item" key={a._id}>
           <h4>{a.title}</h4>
           <p>{a.content}</p>
+          <p>작성자: {a.author || '익명'}</p>
           <button onClick={() => del(a._id)}>POST 삭제</button>
           <button onClick={() => dynDel(a._id)}>다이나믹 삭제</button>
         </div>
